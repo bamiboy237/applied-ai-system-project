@@ -1,0 +1,15 @@
+flowchart TD
+    U[User / Developer] --> C[CLI: codereview]
+    C --> X[Context Builder]
+    X --> L[LLM Teacher Agent]
+    L -->|optional tool calls| T[Repo Tools\nread_file / get_function / search_symbol]
+    T --> L
+    L --> P[Patcher / Rewrite Handler]
+    P --> O[Updated Python File or Diff]
+
+    O --> H[Human Review]
+    H -->|accept, reject, clean, rerun| C
+
+    S[Pytest Test Suite] --> C
+    S --> L
+    S --> P
