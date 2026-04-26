@@ -7,7 +7,11 @@ requires-python = ">=3.14"
 dependencies = [
     "openai>=2.32.0",
     "pydantic-settings>=2.14.0",
+    "typer>=0.19.2",
 ]
+
+[project.scripts]
+codereview = "codereview.codereview:app"
 
 [build-system]
 requires = ["setuptools>=68"]

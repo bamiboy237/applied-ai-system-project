@@ -2,11 +2,21 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 import difflib
 import re
 
 REVIEW_PREFIX = "# REVIEW:"
 _REVIEW_RE = re.compile(r"^REVIEW:(\d+):\s*(.+)$")
+FILE_START = "FILE_START"
+FILE_END = "FILE_END"
+
+
+@dataclass(frozen=True)
+class CopilotResult:
+    reviews: dict[int, list[str]]
+    rewritten_source: str | None = None
 
 
 def parse_reviews(text: str) -> dict[int, list[str]]:
@@ -20,7 +30,23 @@ def parse_reviews(text: str) -> dict[int, list[str]]:
     return out
 
 
-def inject(source: str, reviews: dict[int, str | list[str]]) -> str:
+def parse_copilot_result(text: str) -> CopilotResult:
+    """Parse either inline review comments or a full-file rewrite response."""
+    lines = text.splitlines()
+    try:
+        start = lines.index(FILE_START)
+        end = lines.index(FILE_END)
+    except ValueError:
+        return CopilotResult(reviews=parse_reviews(text))
+
+    if start >= end:
+        raise ValueError("Invalid copilot rewrite response: FILE_END appears before FILE_START")
+
+    rewritten = "\n".join(lines[start + 1 : end])
+    return CopilotResult(reviews={}, rewritten_source=rewritten)
+
+
+def inject(source: str, reviews: Mapping[int, str | Sequence[str]]) -> str:
     """Insert # REVIEW: comments above flagged lines, preserving indentation."""
     lines = source.splitlines(keepends=True)
     for lineno in sorted(reviews.keys(), reverse=True):
@@ -29,7 +55,7 @@ def inject(source: str, reviews: dict[int, str | list[str]]) -> str:
         target = lines[lineno - 1]
         indent = target[: len(target) - len(target.lstrip())]
         review = reviews[lineno]
-        comments = review if isinstance(review, list) else [review]
+        comments = [review] if isinstance(review, str) else list(review)
         for comment in reversed(comments):
             lines.insert(lineno - 1, f"{indent}{REVIEW_PREFIX} {comment}\n")
     return "".join(lines)

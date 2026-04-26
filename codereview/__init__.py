@@ -1,1 +1,1 @@
-"""codereview - cli that injects review comments into source files."""
+"""codereview - teacher-style code guidance with inline comments or focused rewrites."""

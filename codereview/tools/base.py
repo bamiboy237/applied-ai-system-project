@@ -10,4 +10,6 @@ class Tool(ABC):
     schema: ClassVar[ToolSchema]
 
     @abstractmethod
-    def execute(self, **kwargs: object) -> str: ...
+    def execute(self, **kwargs: object) -> str:
+        """Execute the tool and return a text response."""
+        ...

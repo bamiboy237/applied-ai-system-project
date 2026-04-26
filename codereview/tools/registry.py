@@ -1,6 +1,8 @@
-"""tool registry and dispatcher — maps tool names to implementations and routes model tool calls."""
+"""tool registry and dispatcher - maps tool names to implementations and routes model tool calls."""
 
 from typing import TYPE_CHECKING, Any, Callable
+
+from openai.types.responses.function_tool_param import FunctionToolParam
 
 from .schema import ToolSchema
 
@@ -13,27 +15,31 @@ class ToolRegistry:
     schemas: dict[str, ToolSchema]
 
     def __init__(self) -> None:
+        """Initialize empty tool and schema registries."""
         self.tools = {}
         self.schemas = {}
 
     def register(self, schema: ToolSchema) -> Callable[[Callable[..., str]], Callable[..., str]]:
         """Decorator to register a function-based tool with its schema."""
         def decorator(func: Callable[..., str]) -> Callable[..., str]:
+            """Attach the tool implementation to the registry."""
             self.tools[schema.name] = func
             self.schemas[schema.name] = schema
             return func
         return decorator
 
     def get_schema(self, name: str) -> ToolSchema | None:
+        """Look up a registered tool schema by name."""
         schema = self.schemas.get(name)
         if schema is None:
             raise KeyError(f'Schema "{name}" not found in registry')
         return schema
 
     def get_all_schemas(self) -> list[ToolSchema]:
+        """Return all registered tool schemas."""
         return list(self.schemas.values())
 
-    def get_tools(self) -> list[dict[str, Any]]:
+    def get_tools(self) -> list[FunctionToolParam]:
         """Return all tool schemas ready to pass to the Responses API."""
         return [schema.to_json_schema() for schema in self.get_all_schemas()]
 

@@ -13,6 +13,7 @@ Schemas are used both for LLM context and argument validation.
 from __future__ import annotations
 
 from pydantic import BaseModel, field_validator
+from openai.types.responses.function_tool_param import FunctionToolParam
 
 
 class ToolParameter(BaseModel):
@@ -27,7 +28,7 @@ class ToolParameter(BaseModel):
     @field_validator("type")
     @classmethod
     def validate_type(cls, v: str) -> str:
-        """ "Valid that the type is a valid JSON Schema type."""
+        """Validate that the type is a supported JSON Schema primitive."""
         valid_types = {"string", "integer", "number", "boolean", "object", "array"}
         if v not in valid_types:
             raise ValueError(f"Invalid type: {v}")
@@ -41,8 +42,8 @@ class ToolSchema(BaseModel):
     description: str
     parameters: list[ToolParameter]
 
-    def to_json_schema(self) -> dict:
-        """Convert ToolSchema to OpenAI function format."""
+    def to_json_schema(self) -> FunctionToolParam:
+        """Convert ToolSchema to the Responses API function-tool format."""
         properties = {}
         required = []
 
@@ -66,9 +67,8 @@ class ToolSchema(BaseModel):
 
         return {
             "type": "function",
-            "function": {
-                "name": self.name,
-                "description": self.description,
-                "parameters": parameters,
-            },
+            "name": self.name,
+            "description": self.description,
+            "parameters": parameters,
+            "strict": False,
         }

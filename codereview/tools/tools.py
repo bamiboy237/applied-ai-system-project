@@ -30,6 +30,7 @@ class ReadFileTool(Tool):
 
     @override
     def execute(self, **kwargs: object) -> str:
+        """Read a project file and optionally truncate the output."""
         file_path = str(kwargs.get("file_path", ""))
         raw_max = kwargs.get("max_chars")
         max_chars = int(raw_max) if isinstance(raw_max, int) else None
@@ -57,6 +58,7 @@ class GetFunctionTool(Tool):
 
     @override
     def execute(self, **kwargs: object) -> str:
+        """Extract the source for a named function or class."""
         file_path = str(kwargs.get("file_path", ""))
         name = str(kwargs.get("name", ""))
         ok, path, err = _validate_path(file_path)
@@ -84,6 +86,7 @@ class SearchSymbolTool(Tool):
 
     @override
     def execute(self, **kwargs: object) -> str:
+        """Search the project for symbol definitions and call sites."""
         symbol = str(kwargs.get("symbol", ""))
         root = get_settings().project_root
         results: list[str] = []
