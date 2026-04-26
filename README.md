@@ -175,6 +175,8 @@ It also reinforced that good AI-assisted workflows still need ordinary software 
 
 GitHub repository: https://github.com/bamiboy237/applied-ai-system-project
 
+Model card: [model_card.md](/Users/bogningguy-robert/Desktop/codereview/model_card.md)
+
 What this project says about me as an AI engineer:
 
 This project shows that I treat AI engineering as applied systems work rather than prompt theater. I focus on building constrained, testable workflows around the model, with clear failure handling, human review, and enough observability to understand what the AI did and why.
