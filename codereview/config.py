@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=ENV_FILE)
 
     openai_api_key: SecretStr = Field(alias="OPENAI_API_KEY")
-    openai_model: str = "gpt-5.4-nano"
-    project_root: Path = ENV_FILE.parent.resolve()
+    openai_model: str = "gpt-5.4-mini"
+    project_root: Path = Path(ENV_FILE.parent.resolve()).resolve()
 
 
 @lru_cache(maxsize=1)

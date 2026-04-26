@@ -10,6 +10,8 @@ This project evolved from my original Modules 1-3 project, also named `coderevie
 
 `codereview` helps a developer inspect one Python file at a time using an LLM that behaves like a demanding but fair code mentor. The system builds local project context, optionally lets the model inspect more of the repo through tools, and then returns either inline review comments or a focused rewrite that the human can apply directly or preview as a diff first.
 
+Demo video: https://www.loom.com/share/89a78707c5694347a502fe4e5d7fa727
+
 ## Architecture Overview
 
 The system has five main parts:
@@ -23,6 +25,10 @@ The system has five main parts:
 Data flows from the developer into the CLI, through context construction and the model loop, and back out as either an updated file or a dry-run diff. Human review remains in the loop through the dry-run confirmation flow, and automated tests check the CLI, patching logic, and tool-call loop.
 
 Mermaid source for the diagram is stored in [assets/system-diagram.mmd](/Users/bogningguy-robert/Desktop/codereview/assets/system-diagram.mmd).
+
+Rendered diagram:
+
+![System diagram](/Users/bogningguy-robert/Desktop/codereview/assets/system-diagram.png)
 
 ```mermaid
 flowchart TD
