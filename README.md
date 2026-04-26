@@ -165,6 +165,14 @@ This project taught me that useful AI systems are mostly about boundaries, not j
 
 It also reinforced that good AI-assisted workflows still need ordinary software engineering discipline: validation, test coverage, observability, and a human checkpoint before risky edits. The model is only one component; the real system is the loop around it.
 
+## Portfolio Artifact
+
+GitHub repository: https://github.com/bamiboy237/applied-ai-system-project
+
+What this project says about me as an AI engineer:
+
+This project shows that I treat AI engineering as applied systems work rather than prompt theater. I focus on building constrained, testable workflows around the model, with clear failure handling, human review, and enough observability to understand what the AI did and why.
+
 ## Constraints
 
 - Python files only.
