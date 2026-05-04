@@ -24,9 +24,10 @@ def test_launcher_runs_streamlit_with_resolved_app(monkeypatch) -> None:
     calls = {}
     monkeypatch.setattr(codereview_ui, "find_streamlit", lambda: "/bin/streamlit")
 
-    def fake_run(command, check):
+    def fake_run(command, check, cwd):
         calls["command"] = command
         calls["check"] = check
+        calls["cwd"] = cwd
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(codereview_ui.subprocess, "run", fake_run)
@@ -38,3 +39,4 @@ def test_launcher_runs_streamlit_with_resolved_app(monkeypatch) -> None:
         str(codereview_ui.streamlit_target()),
     ]
     assert calls["check"] is False
+    assert calls["cwd"] == codereview_ui.streamlit_target().parent

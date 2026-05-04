@@ -1,5 +1,6 @@
 import difflib
 import os
+from pathlib import Path
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -14,17 +15,256 @@ from codereview.ui_review import (
 )
 from llm_client import MockClient, OpenAIClient
 
+APP_DIR = Path(__file__).resolve().parent
+ENV_FILE = APP_DIR / ".env"
+
 # ----------------------------
 # App setup
 # ----------------------------
 st.set_page_config(page_title="BugHound", page_icon="🐶", layout="wide")
+
+
+def apply_glass_theme() -> None:
+    """Apply a restrained dark glass skin to Streamlit's default components."""
+    st.markdown(
+        """
+        <style>
+        :root {
+            --app-bg: #090d13;
+            --panel: rgba(18, 24, 33, 0.72);
+            --panel-solid: #121821;
+            --panel-soft: rgba(255, 255, 255, 0.045);
+            --border: rgba(226, 232, 240, 0.12);
+            --border-strong: rgba(226, 232, 240, 0.22);
+            --text: #e5edf7;
+            --muted: #93a4b8;
+            --primary: #67e8f9;
+            --primary-strong: #22d3ee;
+            --primary-soft: rgba(103, 232, 249, 0.12);
+            --shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+        }
+
+        .stApp {
+            color: var(--text);
+            background:
+                linear-gradient(180deg, rgba(103, 232, 249, 0.055), transparent 22rem),
+                linear-gradient(180deg, var(--app-bg), #0c1118 48%, #090d13);
+            background-attachment: fixed;
+        }
+
+        [data-testid="stHeader"] {
+            background: rgba(9, 13, 19, 0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        [data-testid="stToolbar"] {
+            background: transparent;
+        }
+
+        [data-testid="stHeader"] button,
+        [data-testid="stToolbar"] button {
+            color: var(--text);
+        }
+
+        .block-container {
+            max-width: 1240px;
+            padding-top: 2.25rem;
+            padding-bottom: 3rem;
+        }
+
+        h1, h2, h3, h4, h5, h6, p, label {
+            letter-spacing: 0;
+        }
+
+        h1 {
+            color: var(--text);
+            font-weight: 800;
+            margin-bottom: 0.15rem;
+        }
+
+        [data-testid="stCaptionContainer"] {
+            color: var(--muted);
+        }
+
+        [data-testid="stSidebar"] {
+            background: rgba(9, 13, 19, 0.84);
+            border-right: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+            gap: 0.9rem;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
+            color: var(--text);
+        }
+
+        [data-testid="stSidebar"] hr,
+        [data-testid="stMarkdownContainer"] hr {
+            border-color: var(--border);
+        }
+
+        [data-testid="stTabs"] [role="tablist"] {
+            gap: 0.25rem;
+            padding: 0.35rem;
+            margin-bottom: 1.15rem;
+            width: fit-content;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        [data-testid="stTabs"] [role="tab"] {
+            min-height: 2.4rem;
+            padding: 0.35rem 1rem;
+            color: var(--muted);
+            border-radius: 8px;
+        }
+
+        [data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+            color: #041014;
+            background: var(--primary);
+            font-weight: 700;
+        }
+
+        [data-testid="stStatusWidget"],
+        [data-testid="stExpander"],
+        [data-testid="stMetric"],
+        [data-testid="stAlert"] {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        [data-testid="stMetric"] {
+            padding: 0.85rem 1rem;
+        }
+
+        [data-testid="stMetricValue"] {
+            color: var(--primary);
+        }
+
+        [data-testid="stTextArea"] textarea,
+        [data-testid="stTextInput"] input,
+        [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+        [data-testid="stNumberInput"] input {
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(8, 12, 18, 0.82);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        [data-testid="stTextArea"] textarea:focus,
+        [data-testid="stTextInput"] input:focus {
+            border-color: rgba(103, 232, 249, 0.7);
+            box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.24);
+        }
+
+        [data-testid="stButton"] button {
+            min-height: 2.6rem;
+            color: var(--text);
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.20);
+            transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+        }
+
+        [data-testid="stButton"] button:hover {
+            border-color: rgba(103, 232, 249, 0.58);
+            background: var(--primary-soft);
+            transform: translateY(-1px);
+        }
+
+        [data-testid="stButton"] button[kind="primary"],
+        [data-testid="stButton"] button[kind="primaryFormSubmit"] {
+            color: #031116;
+            border-color: var(--primary-strong);
+            background: var(--primary);
+            font-weight: 800;
+        }
+
+        [data-testid="stButton"] button:disabled {
+            color: rgba(238, 242, 246, 0.35);
+            border-color: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.045);
+            box-shadow: none;
+            transform: none;
+        }
+
+        [data-testid="stCodeBlock"],
+        pre {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(5, 8, 13, 0.92) !important;
+        }
+
+        code {
+            color: #dce9f9;
+        }
+
+        [data-testid="stJson"] {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(5, 8, 13, 0.92);
+        }
+
+        div[data-baseweb="popover"],
+        ul[role="listbox"] {
+            border: 1px solid var(--border);
+            background: var(--panel-solid);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        [data-testid="stAlert"] {
+            color: var(--text);
+        }
+
+        [data-testid="stAlert"] div {
+            color: inherit;
+        }
+
+        [data-testid="stDecoration"] {
+            background: var(--primary);
+        }
+
+        @media (max-width: 760px) {
+            .block-container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            [data-testid="stTabs"] [role="tab"] {
+                padding-left: 0.7rem;
+                padding-right: 0.7rem;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+apply_glass_theme()
 st.title("🐶 BugHound")
 st.caption(
     "Analyze snippets with the starter agent, or preview codereview comments and focused rewrites for local Python files."
 )
 
-# Load environment variables from .env if present
-load_dotenv()
+# Load environment variables from the project .env, independent of launch cwd.
+load_dotenv(dotenv_path=ENV_FILE)
 
 # ----------------------------
 # Helpers
@@ -85,7 +325,7 @@ def get_snippet_client(mode: str, model_name: str, temperature: float):
 
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
     if not api_key:
-        return None, "Missing OPENAI_API_KEY. Add it to your .env file to use OpenAI mode."
+        return None, f"Missing OPENAI_API_KEY. Expected .env at {ENV_FILE}."
     return OpenAIClient(model_name=model_name, temperature=temperature), "OpenAI client ready."
 
 

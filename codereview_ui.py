@@ -41,7 +41,11 @@ def main() -> int:
         print(f"BugHound app not found at {app_path}", file=sys.stderr)
         return 1
 
-    return subprocess.run([streamlit, "run", str(app_path)], check=False).returncode
+    return subprocess.run(
+        [streamlit, "run", str(app_path)],
+        check=False,
+        cwd=app_path.parent,
+    ).returncode
 
 
 if __name__ == "__main__":
