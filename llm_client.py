@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 
 class MockClient:
@@ -13,50 +12,39 @@ class MockClient:
         if "Return ONLY valid JSON" in system_prompt:
             # Purposely not JSON to force fallback unless students change behavior.
             return "I found some issues, but I'm not returning JSON right now."
-        return "# MockClient: no rewrite available in offline mode.\n"
+        # Empty output tells the agent to use its deterministic fallback fixer.
+        return ""
 
 
-class GeminiClient:
+class OpenAIClient:
     """
-    Minimal Gemini API wrapper with added error resilience.
+    Minimal OpenAI Responses API wrapper.
 
     Requirements:
-    - google-genai installed
-    - GEMINI_API_KEY set in environment (or loaded via python-dotenv)
+    - openai installed
+    - OPENAI_API_KEY set in environment (or loaded via python-dotenv)
     """
 
-    def __init__(self, model_name: str = "gemma-3-27b-it", temperature: float = 0.2):
-        api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    def __init__(self, model_name: str = "gpt-5.4-mini", temperature: float = 0.2):
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
         if not api_key:
             raise RuntimeError(
-                "Missing GEMINI_API_KEY. Create a .env file and set GEMINI_API_KEY=..."
+                "Missing OPENAI_API_KEY. Create a .env file and set OPENAI_API_KEY=..."
             )
 
-        # Import here so heuristic mode doesn't require the dependency at import time.
-        from google import genai
+        # Import here so heuristic mode does not require the dependency at import time.
+        from openai import OpenAI
 
-        self.client = genai.Client(api_key=api_key)
+        self.client = OpenAI(api_key=api_key)
         self.model_name = model_name
         self.temperature = float(temperature)
 
     def complete(self, system_prompt: str, user_prompt: str) -> str:
-        """
-        Sends a single request to Gemini.
-
-        If an error occurs, it returns an empty string, triggering the agent's
-        heuristic fallback logic.
-        """
-        try:
-            merged_prompt = f"{system_prompt}\n\n{user_prompt}".strip()
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=merged_prompt,
-            )
-
-            # Defensive: response.text can be None or raise an error if blocked by filters.
-            return response.text or ""
-
-        except Exception:
-            # Returning empty string allows the agent to detect the failure
-            # and switch to offline rules.
-            return ""
+        """Send a single request to OpenAI and return text output."""
+        response = self.client.responses.create(
+            model=self.model_name,
+            instructions=system_prompt,
+            input=user_prompt,
+            temperature=self.temperature,
+        )
+        return response.output_text or ""

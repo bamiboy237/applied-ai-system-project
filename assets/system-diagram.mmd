@@ -1,0 +1,53 @@
+flowchart TD
+    U[User / Developer]
+
+    subgraph UI[Streamlit UI]
+        LAUNCH[codereview-ui launcher] --> APP[bughound_app.py]
+        APP --> SNIP[Snippet Review tab]
+        APP --> FILEUI[File Review Chat tab]
+    end
+
+    subgraph BUG[BugHound snippet workflow]
+        BA[BugHoundAgent]
+        ANALYZE[Heuristic or OpenAI analysis]
+        RISK[Risk assessor]
+        SNIPOUT[Issues, proposed fix, risk score, diff, trace]
+        BA --> ANALYZE --> RISK --> SNIPOUT
+    end
+
+    subgraph REVIEW[codereview file workflow]
+        VALIDATE[Validate local .py path]
+        PREVIEW[Live trace + pending diff preview]
+        CLI[CLI: python -m codereview.codereview]
+        CLEAN[Clean injected REVIEW comments]
+        DRY[Dry-run or direct apply flow]
+        LOOP[Shared codereview agentic loop]
+        CTX[Context builder]
+        TEACHER[OpenAI teacher agent]
+        TOOLS[Repo tools: read_file / get_function / search_symbol]
+        PATCH[Patcher / rewrite handler]
+        RESULT[Inline REVIEW comments, full-file rewrite, or cleanup diff]
+
+        VALIDATE --> PREVIEW --> LOOP
+        CLI --> CLEAN
+        CLI --> DRY --> LOOP
+        LOOP --> CTX --> TEACHER
+        TEACHER -->|optional tool calls| TOOLS --> TEACHER
+        TEACHER --> PATCH --> RESULT
+    end
+
+    subgraph SAFETY[Human review and verification]
+        HUMAN[Human review]
+        TESTS[Pytest suite]
+    end
+
+    U --> LAUNCH
+    U --> CLI
+    SNIP --> BA
+    FILEUI --> VALIDATE
+    SNIPOUT --> HUMAN
+    PREVIEW -->|apply / discard| HUMAN
+    RESULT --> HUMAN
+
+    TESTS -.-> BUG
+    TESTS -.-> REVIEW

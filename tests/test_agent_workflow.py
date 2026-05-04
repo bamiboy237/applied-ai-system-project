@@ -45,5 +45,6 @@ def test_mock_client_forces_llm_fallback_to_heuristics_for_analysis():
     result = agent.run(code)
 
     assert any(issue.get("type") == "Code Quality" for issue in result["issues"])
+    assert "logging.info(" in result["fixed_code"]
     # Ensure we logged the fallback path
     assert any("Falling back to heuristics" in entry.get("message", "") for entry in result["logs"])
