@@ -121,7 +121,7 @@ Mitigations in this version:
 Current automated verification:
 
 ```text
-52 passed
+53 passed
 ```
 
 Covered areas:
@@ -135,6 +135,7 @@ Covered areas:
 - context filtering for generated and dependency folders;
 - live agent-loop trace collection for the Streamlit file-review tab;
 - UI file validation and preview generation;
+- consolidated prompt loading for the `codereview` teacher agent;
 - `codereview-ui` launcher behavior;
 - CLI validation;
 - focused rewrite parsing;

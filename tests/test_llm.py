@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from codereview import llm
+from codereview.prompts import get_system_prompt
 from codereview.patcher import CopilotResult
 from openai.types.responses.response_function_tool_call import ResponseFunctionToolCall
 from openai.types.responses.response_function_call_arguments_done_event import (
@@ -84,6 +85,14 @@ def make_event(event_type: str, **kwargs: object) -> SimpleNamespace:
             arguments=kwargs["arguments"],
         )
     return SimpleNamespace(type=event_type, **kwargs)
+
+
+def test_codereview_system_prompt_loads_from_prompt_directory() -> None:
+    prompt = get_system_prompt()
+
+    assert "senior Python teacher" in prompt
+    assert "REVIEW:<line>" in prompt
+    assert "FILE_START" in prompt
 
 
 def test_review_context_returns_reviews_without_tool_calls(monkeypatch, capsys) -> None:

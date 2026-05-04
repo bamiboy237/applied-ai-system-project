@@ -39,11 +39,11 @@ Rewrite mode is reserved for explicit, narrow requests. In that case the model r
 - `bughound_agent.py`: plan, analyze, act, test, reflect workflow.
 - `llm_client.py`: offline mock client and OpenAI Responses API client.
 - `reliability/risk_assessor.py`: deterministic risk scoring and auto-fix gate.
-- `codereview/`: CLI entrypoint, OpenAI teacher loop, context builder, patcher, prompts, config, and repo tools.
+- `codereview/`: CLI entrypoint, OpenAI teacher loop, context builder, patcher, config, and repo tools.
 - `codereview-ui`: repo-level launcher for the Streamlit app.
 - `codereview_ui.py`: launcher implementation that resolves `bughound_app.py` from the repo path.
 - `codereview/tools/`: constrained model-callable tools for local repo inspection.
-- `prompts/`: BugHound analyzer and fixer prompt templates.
+- `prompts/`: BugHound analyzer/fixer templates and the `codereview` teacher-agent system prompt.
 - `sample_code/`: small snippets for the Streamlit UI.
 - `trial/`: intentionally flawed Python files for `codereview` demos.
 - `tests/`: unit tests for BugHound, risk scoring, patching, CLI behavior, and the tool-call loop.
@@ -163,7 +163,7 @@ python -m pytest -q
 Current verification:
 
 ```text
-52 passed
+53 passed
 ```
 
 The tests cover:
