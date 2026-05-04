@@ -39,8 +39,9 @@ Rewrite mode is reserved for explicit, narrow requests. In that case the model r
 - `bughound_agent.py`: plan, analyze, act, test, reflect workflow.
 - `llm_client.py`: offline mock client and OpenAI Responses API client.
 - `reliability/risk_assessor.py`: deterministic risk scoring and auto-fix gate.
+- `pyproject.toml`: packaging metadata and console scripts for `codereview` and `codereview-ui`.
 - `codereview/`: CLI entrypoint, OpenAI teacher loop, context builder, patcher, config, and repo tools.
-- `codereview-ui`: repo-level launcher for the Streamlit app.
+- `codereview-ui`: repo-level wrapper for the Streamlit app, useful before global installation.
 - `codereview_ui.py`: launcher implementation that resolves `bughound_app.py` from the repo path.
 - `codereview/tools/`: constrained model-callable tools for local repo inspection.
 - `prompts/`: BugHound analyzer/fixer templates and the `codereview` teacher-agent system prompt.
@@ -76,7 +77,13 @@ Install the repo commands globally with `uv tool`:
 uv tool install --editable .
 ```
 
-This exposes:
+If an older local `codereview` tool is already installed, use:
+
+```bash
+uv tool install --editable . --force
+```
+
+This exposes these commands on your shell path:
 
 ```bash
 codereview
@@ -136,7 +143,7 @@ File review demo flow:
 Comment mode:
 
 ```bash
-python -m codereview.codereview --file trial/buggy_service.py "review this file"
+codereview --file trial/buggy_service.py "review this file"
 ```
 
 Expected result: the CLI adds a small number of `# REVIEW:` comments above risky lines.
@@ -144,7 +151,7 @@ Expected result: the CLI adds a small number of `# REVIEW:` comments above risky
 Dry-run mode:
 
 ```bash
-python -m codereview.codereview --file trial/buggy_service.py --dry-run "review this file"
+codereview --file trial/buggy_service.py --dry-run "review this file"
 ```
 
 Expected result: the CLI writes a unified diff to `/tmp`, opens it in the configured editor when available, and asks whether to apply the patch.
@@ -152,7 +159,7 @@ Expected result: the CLI writes a unified diff to `/tmp`, opens it in the config
 Clean mode:
 
 ```bash
-python -m codereview.codereview --file trial/buggy_service.py --clean
+codereview --file trial/buggy_service.py --clean
 ```
 
 Expected result: all injected `# REVIEW:` comments are removed. This is useful after a demo so the fixture can be reused.
@@ -160,7 +167,7 @@ Expected result: all injected `# REVIEW:` comments are removed. This is useful a
 Cross-file inspection demo:
 
 ```bash
-python -m codereview.codereview --file trial/force_tool_review.py "review this file and verify related helper behavior before commenting"
+codereview --file trial/force_tool_review.py "review this file and verify related helper behavior before commenting"
 ```
 
 Expected result: the model can request tools such as `read_file`, `get_function`, or `search_symbol` when the target file alone is not enough.
@@ -185,6 +192,7 @@ The tests cover:
 - Risk scoring and auto-fix guardrails.
 - `codereview` patch injection and cleanup.
 - `codereview-ui` launcher path resolution and missing-Streamlit errors.
+- `uv tool` packaging entrypoints for installed `codereview` and `codereview-ui` commands.
 - Context filtering for generated and dependency folders.
 - File-review UI validation and preview helpers.
 - Dry-run diff handling.
@@ -195,7 +203,7 @@ The tests cover:
 ## Design Decisions
 
 - I kept BugHound snippet review and `codereview` file review separate. The UI is better for explaining the agent workflow; the CLI is better for realistic file review.
-- I added `codereview-ui` as a small launcher instead of changing CLI semantics. The existing `python -m codereview.codereview ...` commands remain unchanged.
+- I added `codereview-ui` as a small launcher instead of changing CLI semantics. The installed `codereview` command and the existing `python -m codereview.codereview ...` path run the same CLI.
 - I kept heuristic mode because the demo should still work without network access or an API key.
 - I kept `codereview` scoped to one Python file per run because broad AI edits are harder to inspect and easier to trust too quickly.
 - I gave the model narrow tools instead of broad filesystem access. That makes the system easier to test and safer to explain.

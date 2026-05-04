@@ -51,6 +51,7 @@ Inputs:
 
 - short Python snippets in the BugHound UI;
 - Python source files for the `codereview` CLI;
+- installed commands from `uv tool install --editable .`, especially `codereview` and `codereview-ui`;
 - optional line ranges for focused CLI review;
 - user instructions such as "review this file" or "fix the SQLite path handling";
 - local `.env` configuration containing `OPENAI_API_KEY` for OpenAI mode.
@@ -66,6 +67,7 @@ Outputs:
 - dry-run diff files;
 - focused full-file rewrites when the instruction clearly asks for a small change;
 - pending UI previews that can be applied or discarded.
+- globally installed command entrypoints for local demo and development use.
 
 ## Reliability And Safety Rules
 
@@ -114,6 +116,7 @@ Mitigations in this version:
 - tools are narrow and path-checked;
 - `--dry-run` keeps a human in the approval loop;
 - `--clean` allows injected review comments to be removed predictably;
+- `uv tool install --editable .` exposes the intended local commands without relying on ad hoc shell aliases;
 - tests cover deterministic behavior around parsing, patching, dry-run flow, and tool dispatch.
 
 ## Testing Summary
@@ -137,6 +140,7 @@ Covered areas:
 - UI file validation and preview generation;
 - consolidated prompt loading for the `codereview` teacher agent;
 - `codereview-ui` launcher behavior;
+- packaging entrypoints for `uv tool` installation;
 - CLI validation;
 - focused rewrite parsing;
 - tool-call dispatch;
