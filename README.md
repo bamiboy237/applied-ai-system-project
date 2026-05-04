@@ -70,6 +70,19 @@ If your local venv does not include `pip`, use `uv`:
 uv pip install -r requirements.txt
 ```
 
+Install the repo commands globally with `uv tool`:
+
+```bash
+uv tool install --editable .
+```
+
+This exposes:
+
+```bash
+codereview
+codereview-ui
+```
+
 For OpenAI-backed runs, copy the example environment file:
 
 ```bash
@@ -87,7 +100,7 @@ OPENAI_API_KEY=your_real_key_here
 Run:
 
 ```bash
-./codereview-ui
+codereview-ui
 ```
 
 This launches:
@@ -96,7 +109,7 @@ This launches:
 streamlit run bughound_app.py
 ```
 
-The launcher resolves `bughound_app.py` relative to this repository, so it can be run from a different working directory. If Streamlit is missing, it prints a readable dependency error.
+The launcher resolves `bughound_app.py` relative to the installed project, so it can be run from a different working directory. If Streamlit is missing, it prints a readable dependency error. The repo-local `./codereview-ui` wrapper is also available for running directly from a clone.
 
 Snippet demo flow:
 

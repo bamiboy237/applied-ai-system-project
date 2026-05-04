@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "applied-ai-system-project"
+version = "0.1.0"
+description = "BugHound starter extended with codereview file-review workflows."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit",
+    "python-dotenv",
+    "openai>=2.32.0",
+    "pydantic-settings>=2.14.0",
+    "typer>=0.19.2",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+[project.scripts]
+codereview = "codereview.codereview:app"
+codereview-ui = "codereview_ui:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["codereview", "reliability"]
+py-modules = ["bughound_agent", "bughound_app", "codereview_ui", "llm_client"]
+artifacts = [
+    "assets/*",
+    "prompts/*",
+    "sample_code/*",
+    "trial/*",
+]
