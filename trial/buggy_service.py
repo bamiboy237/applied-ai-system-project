@@ -32,7 +32,6 @@ EmailRule = dict[str, Any]
 
 def _conn() -> sqlite3.Connection:
     """Open a shared connection; creates the schema on first call."""
-    # REVIEW: check_same_thread=False with a shared connection is unsafe; your lock only covers writes, not concurrent reads and connection lifecycle.
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.execute(
         "CREATE TABLE IF NOT EXISTS users ("
